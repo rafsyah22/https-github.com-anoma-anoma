@@ -9,11 +9,11 @@
     logic=resource-logic
     label=@t
     quantity=@
-    data=@
+    value=@
     eph=?
-    nonce=@
-    npk=@
-    rseed=@
+    nonce=[@u @]
+    npk=[@u @]
+    rseed=[@u @]
   ==
 ::  a transparent resource commitment is the resource.
 +$  commitment  @
