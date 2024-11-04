@@ -15,7 +15,7 @@ defmodule Anoma.Node.Logging do
   require Node.Event
   require Logger
 
-  @type flag :: :info | :debug | :error
+  @type flag :: :info | :debug | :warning | :error
 
   typedstruct module: LoggingEvent do
     field(:flag, Logging.flag())
@@ -55,11 +55,12 @@ defmodule Anoma.Node.Logging do
   @spec init(any()) :: {:ok, Logging.t()}
   def init(args) do
     Process.set_label(__MODULE__)
+    rocks = Mix.env() != :test
 
     args =
       Keyword.validate!(args, [
         :node_id,
-        rocks: false,
+        rocks: rocks,
         table: __MODULE__.Events
       ])
 
@@ -174,6 +175,8 @@ defmodule Anoma.Node.Logging do
   defp log_fun({:debug, msg}), do: Logger.debug(msg)
 
   defp log_fun({:info, msg}), do: Logger.info(msg)
+
+  defp log_fun({:warning, msg}), do: Logger.warning(msg)
 
   defp log_fun({:error, msg}), do: Logger.error(msg)
 
