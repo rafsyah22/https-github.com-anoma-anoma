@@ -10,7 +10,6 @@ defmodule Anoma.Node.Transaction.Backends do
   alias Anoma.TransparentResource
   alias Anoma.TransparentResource.Transaction, as: TTransaction
   alias Anoma.TransparentResource.Resource, as: TResource
-  alias CommitmentTree.Spec
 
   import Nock
   require Noun
@@ -151,15 +150,6 @@ defmodule Anoma.Node.Transaction.Backends do
             }
         end
 
-      ct =
-        case Ordering.read(node_id, {id, :ct}) do
-          :absent -> CommitmentTree.new(Spec.cm_tree_spec(), nil)
-          val -> val
-        end
-
-      {ct_new, anchor} =
-        CommitmentTree.add(ct, map.commitments |> MapSet.to_list())
-
       Ordering.add(
         node_id,
         {id,
@@ -168,7 +158,7 @@ defmodule Anoma.Node.Transaction.Backends do
              {:nullifiers, map.nullifiers},
              {:commitments, map.commitments}
            ],
-           write: [{:anchor, anchor}, {:ct, ct_new}]
+           write: [{:anchor, value(map.commitments)}]
          }}
       )
 
@@ -380,5 +370,59 @@ defmodule Anoma.Node.Transaction.Backends do
       })
 
     EventBroker.event(event)
+  end
+
+  @doc """
+  I am the commitment accumulator add function for the transparent resource
+  machine.
+
+  Given the commitment set, I add a commitment to it.
+  """
+
+  @spec add(MapSet.t(), binary()) :: MapSet.t()
+  def add(acc, cm) do
+    MapSet.put(acc, cm)
+  end
+
+  @doc """
+  I am the commitment accumulator witness function for the transparent
+  resource machine.
+
+  Given the commitment set and a commitment, I return the original set if
+  the commitment is a member of the former. Otherwise, I return nil
+  """
+
+  @spec witness(MapSet.t(), binary()) :: MapSet.t() | nil
+  def witness(acc, cm) do
+    if MapSet.member?(acc, cm) do
+      acc
+    end
+  end
+
+  @doc """
+  I am the commitment accumulator value function for the transparent
+  resource machine.
+
+  Given the commitment set, I turn it to binary and then hash it using
+  sha-256.
+  """
+
+  @spec value(MapSet.t()) :: binary()
+  def value(acc) do
+    :crypto.hash(:sha256, :erlang.term_to_binary(acc))
+  end
+
+  @doc """
+  I am the commitment accumulator verify function for the transparent
+  resource machine.
+
+  Given the commitment, a witness (i.e. a set) and a commitment value, I
+  output true iff the witness's value is the same as the provided value and
+  the commitment is indeed in the set.
+  """
+
+  @spec verify(binary(), MapSet.t(), binary()) :: bool()
+  def verify(cm, w, val) do
+    val == value(w) and MapSet.member?(w, cm)
   end
 end
