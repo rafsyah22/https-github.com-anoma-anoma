@@ -425,7 +425,7 @@ defmodule Nock.Jets do
     with {:ok, sample} when is_noun_atom(sample) <- sample(core),
          {:ok, block_size} when is_noun_atom(block_size) <-
            Noun.axis(30, core) do
-      {:ok, Nock.Bits.num_bits(sample, block_size)}
+      {:ok, Noun.Bits.num_bits(sample, block_size)}
     else
       _ -> :error
     end
@@ -436,7 +436,7 @@ defmodule Nock.Jets do
 
     case maybe_sample do
       {:ok, sample} ->
-        {:ok, Nock.Jam.jam(sample)}
+        {:ok, Noun.Jam.jam(sample)}
 
       _ ->
         :error
@@ -448,7 +448,7 @@ defmodule Nock.Jets do
 
     case maybe_sample do
       {:ok, sample} when is_noun_atom(sample) ->
-        Nock.Cue.cue(sample)
+        Noun.Jam.cue(sample)
 
       _ ->
         :error

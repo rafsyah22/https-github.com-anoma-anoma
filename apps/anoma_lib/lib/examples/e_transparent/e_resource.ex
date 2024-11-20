@@ -25,17 +25,20 @@ defmodule Examples.ETransparent.EResource do
   Use me when random resources are wanted.
   """
   def trivial_false_resource_generator() do
-    res = %Resource{logic: [[1 | 1], 0 | 0], nonce: Randomness.get_random(32)}
+    res = %Resource{
+      logic: [[<<1>> | <<1>>], <<>> | <<>>],
+      nonce: Randomness.get_random(32)
+    }
 
     assert {:ok, uncued} =
              Resource.to_noun(res)
-             |> Nock.Jam.jam()
-             |> Nock.Cue.cue()
+             |> Noun.Jam.jam()
+             |> Noun.Jam.cue()
              |> elem(1)
              |> Resource.from_noun()
 
     assert uncued == res
-    {:ok, 1} = Nock.nock(res.logic, [9, 2, 0 | 1])
+    {:ok, <<1>>} = Nock.nock(res.logic, [9, 2, 0 | 1])
     res
   end
 
