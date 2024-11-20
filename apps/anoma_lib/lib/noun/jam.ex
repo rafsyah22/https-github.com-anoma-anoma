@@ -41,7 +41,7 @@ defmodule Noun.Jam do
     {bits, _cache, offset} = jam_inner(noun)
     # sanity check
     ^offset = bit_size(bits)
-    bits |> pad_to_binary() |> Nock.Bits.byte_order_big_to_little()
+    bits |> pad_to_binary() |> Noun.Bits.byte_order_big_to_little()
   end
 
   @spec jam_inner(Noun.t(), jam_cache(), non_neg_integer()) ::
@@ -107,7 +107,7 @@ defmodule Noun.Jam do
             {atom_bits, atom_size} =
               atom
               |> Noun.normalize_noun()
-              |> Nock.Bits.byte_order_little_to_big()
+              |> Noun.Bits.byte_order_little_to_big()
               |> unpad_from_binary()
 
             {encoded_atom, encoded_atom_size} =
@@ -189,7 +189,7 @@ defmodule Noun.Jam do
   def cue!(bytes) do
     # we could store binary atoms the other way to not do this.
     # if we did, our strings would print reversed.
-    bytes = Nock.Bits.byte_order_little_to_big(bytes)
+    bytes = Noun.Bits.byte_order_little_to_big(bytes)
 
     # now, trim leading zeroes and turn it into a bitstring rather than
     # a binary made of octets.
@@ -289,7 +289,7 @@ defmodule Noun.Jam do
 
     # at last, return the atom and remaining bitstream.
     # got to flip it (on a byte level) here given how we store them.
-    final_atom = padded_atom |> Nock.Bits.byte_order_big_to_little()
+    final_atom = padded_atom |> Noun.Bits.byte_order_big_to_little()
 
     bits_consumed = length + 2 * length_of_length + tag_bits
 
