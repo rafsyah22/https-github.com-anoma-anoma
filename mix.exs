@@ -16,7 +16,13 @@ defmodule Anoma.MixProject do
       dialyzer: [
         plt_local_path: "plts/anoma.plt",
         plt_core_path: "plts/core.plt",
-        flags: ["-Wno_improper_lists"],
+        flags: [
+          "-Wno_improper_lists",
+          # Checks for underspecified functions, i.e. functions whose
+          # specifications are strictly more permissive than their
+          # success typing.
+          "-Wunderspecs"
+        ],
         plt_add_apps: [:mix, :ex_unit]
       ],
       # Docs
