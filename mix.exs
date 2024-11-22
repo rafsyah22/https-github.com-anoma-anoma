@@ -16,7 +16,12 @@ defmodule Anoma.MixProject do
       dialyzer: [
         plt_local_path: "plts/anoma.plt",
         plt_core_path: "plts/core.plt",
-        flags: ["-Wno_improper_lists"],
+        flags: [
+          "-Wno_improper_lists",
+          # Checks for some unmatched return values, i.e., an
+          # exhaustiveness check on structured returns.
+          "-Wunmatched_returns"
+        ],
         plt_add_apps: [:mix, :ex_unit]
       ],
       # Docs
