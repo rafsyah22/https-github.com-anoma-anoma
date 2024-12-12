@@ -23,6 +23,9 @@ defmodule Anoma.Client.Examples.EClient do
   alias Anoma.Protobuf.Nock.Prove
   alias Anoma.Protobuf.NockService
   alias Anoma.Protobuf.NodeInfo
+  alias Anoma.Node.Examples.EIndexer
+  alias Anoma.TransparentResource.Resource
+  alias Anoma.Node.Utility.Indexer
 
   import ExUnit.Assertions
 
@@ -163,9 +166,20 @@ defmodule Anoma.Client.Examples.EClient do
   """
   @spec list_nullifiers(EConnection.t()) :: EConnection.t()
   def list_nullifiers(conn \\ setup()) do
+    # Create a nullifier in the indexer
+    EIndexer.indexer_reads_nullifier(conn.client.node.node_id)
+
+    # expected nullifier
+    expected_nullifier = Resource.nullifier(%Resource{})
+
+    # request the nullifiers from the client
     node_id = %NodeInfo{node_id: conn.client.node.node_id}
     request = %Nullifiers.Request{node_info: node_id}
-    {:ok, _reply} = IndexerService.Stub.list_nullifiers(conn.channel, request)
+
+    {:ok, response} =
+      IndexerService.Stub.list_nullifiers(conn.channel, request)
+
+    assert response.nullifiers == [expected_nullifier]
 
     conn
   end
@@ -175,12 +189,24 @@ defmodule Anoma.Client.Examples.EClient do
   """
   @spec list_unrevealed_commits(EConnection.t()) :: EConnection.t()
   def list_unrevealed_commits(conn \\ setup()) do
+    # Create an unrevealed commit using another example
+    EIndexer.indexer_reads_unrevealed(conn.client.node.node_id)
+
+    # expected commits
+    expected_commits =
+      %Resource{rseed: "random2"}
+      |> Resource.commitment()
+      |> Elixir.List.wrap()
+
+    # create the request to obtain the commits
     node_id = %NodeInfo{node_id: conn.client.node.node_id}
     request = %UnrevealedCommits.Request{node_info: node_id}
 
-    {:ok, _reply} =
+    {:ok, response} =
       IndexerService.Stub.list_unrevealed_commits(conn.channel, request)
 
+    # assert the right commits are returned
+    assert response.commits == expected_commits
     conn
   end
 
@@ -189,11 +215,22 @@ defmodule Anoma.Client.Examples.EClient do
   """
   @spec list_unspent_resources(EConnection.t()) :: EConnection.t()
   def list_unspent_resources(conn \\ setup()) do
+    # Create an unrevealed commit using another example
+    EIndexer.indexer_reads_unrevealed(conn.client.node.node_id)
+
+    # expected unspent resources
+    expected_unspent_resources =
+      Indexer.get(conn.client.node.node_id, :resources)
+      |> Enum.map(&Nock.Jam.jam/1)
+
+    # create the request to obtain the unspent resources
     node_id = %NodeInfo{node_id: conn.client.node.node_id}
     request = %UnspentResources.Request{node_info: node_id}
 
-    {:ok, _reply} =
+    {:ok, reply} =
       IndexerService.Stub.list_unspent_resources(conn.channel, request)
+
+    assert reply.unspent_resources == expected_unspent_resources
 
     conn
   end
