@@ -6,6 +6,8 @@ defmodule Examples.ENock do
 
   alias Examples.ECrypto
   alias Anoma.TransparentResource.Transaction
+  alias Examples.ETransparent.EAction
+  alias Anoma.TransparentResource.Delta
   import Noun
 
   ####################################################################
@@ -1069,6 +1071,136 @@ defmodule Examples.ENock do
     end
 
     core
+  end
+
+  def delta_add_arm() do
+    "[8 [9 92 0 15] 9 2 10 [6 7 [0 3] [0 12] 0 13] 0 2]"
+    |> Noun.Format.parse_always()
+  end
+
+  def delta_add_call(delta1, delta2) do
+    sample = [delta1 | delta2]
+    [delta_add_arm(), sample | Nock.logics_core()]
+  end
+
+  def delta_add_test() do
+    delta = EAction.trivial_true_commit_delta() |> Delta.to_noun()
+
+    {:ok, [[_ | 4]]} =
+      delta_add_call(delta, delta) |> Nock.nock([9, 2, 0 | 1])
+  end
+
+  def delta_sub_arm() do
+    "[8 [9 1527 0 15] 9 2 10 [6 7 [0 3] [0 12] 0 13] 0 2]"
+    |> Noun.Format.parse_always()
+  end
+
+  def delta_sub_call(delta1, delta2) do
+    sample = [delta1 | delta2]
+    [delta_sub_arm(), sample | Nock.logics_core()]
+  end
+
+  def delta_sub_test() do
+    delta = EAction.trivial_true_commit_delta() |> Delta.to_noun()
+    {:ok, []} = delta_sub_call(delta, delta) |> Nock.nock([9, 2, 0 | 1])
+  end
+
+  def action_delta_arm() do
+    "[8 [9 4 0 15] 9 2 10 [6 0 14] 0 2]"
+    |> Noun.Format.parse_always()
+  end
+
+  def action_delta_call(action) do
+    sample = action
+    [action_delta_arm(), sample | Nock.logics_core()]
+  end
+
+  def action_delta_test() do
+    action = EAction.trivial_true_commit_action() |> Noun.Nounable.to_noun()
+
+    {:ok, [[_ | 2]]} =
+      action |> action_delta_call() |> Nock.nock([9, 2, 0 | 1])
+  end
+
+  def make_delta_arm() do
+    "[8 [9 1494 0 15] 9 2 10 [6 0 14] 0 2]"
+    |> Noun.Format.parse_always()
+  end
+
+  def make_delta_call(actions) do
+    sample = actions
+    [make_delta_arm(), sample | Nock.logics_core()]
+  end
+
+  def make_delta_test() do
+    actions = [
+      EAction.trivial_true_commit_action() |> Noun.Nounable.to_noun()
+    ]
+
+    {:ok, [[_ | 2]]} =
+      actions |> make_delta_call() |> Nock.nock([9, 2, 0 | 1])
+  end
+
+  def is_commitment_arm() do
+    "[8 [9 1.526 0 15] 9 2 10 [6 0 14] 0 2]"
+    |> Noun.Format.parse_always()
+  end
+
+  def make_is_commitment_call(atom) do
+    sample = atom
+    [is_commitment_arm(), sample | Nock.logics_core()]
+  end
+
+  def is_commitment_test() do
+    atom_true = "CM_whatever"
+    atom_false = "NF_whatever"
+    atom_weird_still_false = "a"
+
+    {:ok, res1} =
+      atom_true |> make_is_commitment_call() |> Nock.nock([9, 2, 0 | 1])
+
+    {:ok, res2} =
+      atom_false |> make_is_commitment_call() |> Nock.nock([9, 2, 0 | 1])
+
+    {:ok, res3} =
+      atom_weird_still_false
+      |> make_is_commitment_call()
+      |> Nock.nock([9, 2, 0 | 1])
+
+    assert Noun.equal(res1, 0)
+    assert Noun.equal(res2, 1)
+    assert Noun.equal(res3, 1)
+  end
+
+  def is_nullifier_arm() do
+    "[8 [9 372 0 15] 9 2 10 [6 0 14] 0 2]"
+    |> Noun.Format.parse_always()
+  end
+
+  def make_is_nullifier_call(atom) do
+    sample = atom
+    [is_nullifier_arm(), sample | Nock.logics_core()]
+  end
+
+  def is_nullifier_test() do
+    atom_true = "NF_whatever"
+    atom_false = "CM_whatever"
+    atom_weird_still_false = "a"
+
+    {:ok, res1} =
+      atom_true |> make_is_nullifier_call() |> Nock.nock([9, 2, 0 | 1])
+
+    {:ok, res2} =
+      atom_false |> make_is_nullifier_call() |> Nock.nock([9, 2, 0 | 1])
+
+    {:ok, res3} =
+      atom_weird_still_false
+      |> make_is_commitment_call()
+      |> Nock.nock([9, 2, 0 | 1])
+
+    assert Noun.equal(res1, 0)
+    assert Noun.equal(res2, 1)
+    assert Noun.equal(res3, 1)
   end
 
   ############################################################

@@ -28,15 +28,18 @@ defmodule Nock do
 
   @dialyzer :no_improper_lists
 
-  @layers 8
+  @layers 9
 
-  @layer_1_context_mug 1_023_856_422
-  @layer_4_context_mug 1_869_390_925
-  @layer_5_context_mug 4_018_337_361
-  @layer_6_context_mug 3_932_234_981
-  @layer_7_context_mug 4_202_542_228
-  @layer_8_context_mug 1_736_366_676
-  @layer_4_block_context_mug 2_756_805_836
+  @layer_1_context_mug 703_853_248
+  @layer_4_context_mug 171_152_136
+  @layer_5_context_mug 903_000_751
+  @layer_6_context_mug 1_812_395_411
+  @layer_7_context_mug 469_233_312
+  @layer_8_context_mug 13_631_723
+  @layer_4_block_context_mug 645_316_720
+
+  # always the topmost layer
+  @layer_rm_context_mug 1_729_025_063
 
   # hardcoded jet registry
   # valid statuses:
@@ -44,74 +47,86 @@ defmodule Nock do
   # - :disabled, jet is fully disabled
   # - :check, check that jet and naive produce the same result
   @jet_registry %{
-    3_739_349_216 =>
+    1_070_774_082 =>
       {"dec", 7, @layer_1_context_mug, &Nock.Jets.dec/1, :enabled, 10},
-    3_819_277_753 =>
+    274_794_522 =>
       {"add", 7, @layer_1_context_mug, &Nock.Jets.add/1, :enabled, 10},
-    2_374_874_615 =>
+    1_361_861_245 =>
       {"sub", 7, @layer_1_context_mug, &Nock.Jets.sub/1, :enabled, 10},
-    1_130_480_894 =>
+    1_849_179_272 =>
       {"lth", 7, @layer_1_context_mug, &Nock.Jets.lth/1, :enabled, 10},
-    2_271_972_775 =>
+    1_578_257_594 =>
       {"lte", 7, @layer_1_context_mug, &Nock.Jets.lte/1, :enabled, 10},
-    3_066_075_584 =>
+    1_561_317_665 =>
       {"gth", 7, @layer_1_context_mug, &Nock.Jets.gth/1, :enabled, 10},
-    2_449_621_320 =>
+    961_716_502 =>
       {"gte", 7, @layer_1_context_mug, &Nock.Jets.gte/1, :enabled, 10},
-    2_208_363_748 =>
+    780_273_006 =>
       {"mul", 7, @layer_1_context_mug, &Nock.Jets.mul/1, :enabled, 10},
-    91_135_323 =>
+    1_809_095_064 =>
       {"div", 7, @layer_1_context_mug, &Nock.Jets.div/1, :enabled, 10},
-    567_449_323 =>
+    627_457_367 =>
       {"mod", 7, @layer_1_context_mug, &Nock.Jets.mod/1, :enabled, 10},
-    1_531_543_893 =>
+    1_506_822_028 =>
       {"verify", 7, @layer_6_context_mug, &Nock.Jets.verify/1, :enabled, 100},
-    3_991_451_804 =>
+    494_290_098 =>
       {"sign", 7, @layer_6_context_mug, &Nock.Jets.sign/1, :enabled, 100},
-    3_656_885_839 =>
+    295_570_022 =>
       {"verify-detatched", 7, @layer_6_context_mug,
        &Nock.Jets.verify_detatched/1, :enabled, 100},
-    1_699_002_748 =>
+    718_423_643 =>
       {"sign-detatched", 7, @layer_6_context_mug, &Nock.Jets.sign_detatched/1,
        :enabled, 100},
-    1_585_653_763 =>
+    1_827_555_063 =>
       {"bex", 7, @layer_4_context_mug, &Nock.Jets.bex/1, :enabled, 20},
-    1_023_807_257 =>
+    128_138_607 =>
       {"mix", 7, @layer_5_context_mug, &Nock.Jets.mix/1, :enabled, 20},
-    2_968_763_525 =>
+    1_438_185_685 =>
       {"jam", 7, @layer_5_context_mug, &Nock.Jets.jam/1, :enabled, 50},
-    3_271_615_052 =>
+    1_010_670_936 =>
       {"cue", 7, @layer_5_context_mug, &Nock.Jets.cue/1, :enabled, 50},
-    1_423_749_879 =>
+    2_046_665_033 =>
       {"shax", 7, @layer_7_context_mug, &Nock.Jets.shax/1, :enabled, 100},
-    1_761_078_299 =>
+    1_588_335_594 =>
       {"met", 14, @layer_4_block_context_mug, &Nock.Jets.met/1, :enabled, 20},
-    3_976_423_375 =>
+    945_283_753 =>
       {"end", 14, @layer_4_block_context_mug, &Nock.Jets.nend/1, :enabled, 20},
-    3_534_989_962 =>
+    1_756_595_363 =>
       {"lsh", 14, @layer_4_block_context_mug, &Nock.Jets.lsh/1, :enabled, 20},
-    3_410_895_654 =>
+    579_952_770 =>
       {"rsh", 14, @layer_4_block_context_mug, &Nock.Jets.rsh/1, :enabled, 20},
-    724_462_226 =>
+    318_043_874 =>
       {"abs", 7, @layer_8_context_mug, &Nock.Jets.abs/1, :enabled, 30},
-    2_668_782_675 =>
+    1_483_114_004 =>
       {"dif", 7, @layer_8_context_mug, &Nock.Jets.dif/1, :enabled, 30},
-    1_814_685_155 =>
+    595_807_969 =>
       {"dul", 7, @layer_8_context_mug, &Nock.Jets.dul/1, :enabled, 30},
-    2_357_319_448 =>
+    922_759_722 =>
       {"fra", 7, @layer_8_context_mug, &Nock.Jets.fra/1, :enabled, 30},
-    2_272_237_948 =>
+    1_151_696_150 =>
       {"pro", 7, @layer_8_context_mug, &Nock.Jets.pro/1, :enabled, 30},
-    2_517_398_177 =>
+    1_645_633_564 =>
       {"rem", 7, @layer_8_context_mug, &Nock.Jets.rem/1, :enabled, 30},
-    2_325_836_748 =>
+    1_022_234_851 =>
       {"sum", 7, @layer_8_context_mug, &Nock.Jets.sum/1, :enabled, 30},
-    244_446_486 =>
+    1_959_834_939 =>
       {"sun", 7, @layer_8_context_mug, &Nock.Jets.sun/1, :enabled, 30},
-    1_720_910_226 =>
+    344_914_769 =>
       {"syn", 7, @layer_8_context_mug, &Nock.Jets.syn/1, :enabled, 30},
-    3_800_851_664 =>
-      {"cmp", 7, @layer_8_context_mug, &Nock.Jets.cmp/1, :enabled, 30}
+    1_192_529_830 =>
+      {"cmp", 7, @layer_8_context_mug, &Nock.Jets.cmp/1, :enabled, 30},
+    1_564_147_318 =>
+      {"delta-add", 7, @layer_rm_context_mug, &Nock.Jets.delta_add/1,
+       :enabled, 50},
+    1_973_314_672 =>
+      {"delta-sub", 7, @layer_rm_context_mug, &Nock.Jets.delta_sub/1,
+       :enabled, 50},
+    1_472_842_221 =>
+      {"action-delta", 7, @layer_rm_context_mug, &Nock.Jets.action_delta/1,
+       :enabled, 50},
+    2_056_238_249 =>
+      {"make-delta", 7, @layer_rm_context_mug, &Nock.Jets.make_delta/1,
+       :enabled, 50}
   }
 
   @doc """
@@ -2846,7 +2861,7 @@ defmodule Nock do
   end
 
   rm_string = """
-  [ [8 [1 0 0 0 0] [1 0 0] 0 1]
+  [ [7 [8 [1 0 0 0 0] [1 8 [1 30.160.793.233.665.617.219.451.904.865] 0 0] 0 1] 11 [1.953.718.630 1 30.160.793.233.665.617.219.451.904.865 [0 7] 0] 0 1]
   [ [1 0]
     [ [ 8
         [1 0 0 0]
@@ -2893,8 +2908,8 @@ defmodule Nock do
     1
   ]
   [8 [1 0] [1 1 478.793.196.187.462.788.804.451] 0 1]
-  [ [8 [1 0 0] [1 0 0] 0 1]
-    [ [8 [1 0] [1 0 0] 0 1]
+  [ [7 [8 [1 0 0] [1 8 [1 1.851.907.519.744.077.227.364] 0 0] 0 1] 11 [1.953.718.630 1 1.851.907.519.744.077.227.364 [0 7] 0] 0 1]
+    [ [8 [1 0] [1 5 [1 6.243.918] 8 [8 [9 10 0 255] 9 367 10 [6 7 [0 3] 1 3] 0 2] 9 2 10 [6 [7 [0 3] 1 3] 0 14] 0 2] 0 1]
       [ [8 [1 0 [[1 0] 0 0] 1 1 [0 0] 0 0 1.701.536.102] [1 [0 12] 0 26] 0 1]
         [ 8
           [1 [0 [[1 0] 0 0] 1 1 [0 0] 0 0 1.701.536.102] [0 0 0 0] 0 0 0]
@@ -2927,6 +2942,7 @@ defmodule Nock do
         0
         1
       ]
+      [7 [8 [1 0] [1 8 [1 460.217.181.910.180.775.551.341] 0 0] 0 1] 11 [1.953.718.630 1 460.217.181.910.180.775.551.341 [0 7] 0] 0 1]
       8
       [1 0 0 0 0]
       [ 1
@@ -3025,9 +3041,11 @@ defmodule Nock do
       0
       1
     ]
-    8
-    [1 0 0]
-    [1 0 0]
+    [8 [1 0] [1 5 [1 6.245.699] 8 [8 [9 10 0 255] 9 367 10 [6 7 [0 3] 1 3] 0 2] 9 2 10 [6 [7 [0 3] 1 3] 0 14] 0 2] 0 1]
+    7
+    [8 [1 0 0] [1 8 [1 1.816.244.077.244.883.690.852] 0 0] 0 1]
+    11
+    [1.953.718.630 1 1.816.244.077.244.883.690.852 [0 7] 0]
     0
     1
   ]
@@ -3036,7 +3054,7 @@ defmodule Nock do
     [ 1
       8
       [ [8 [7 [0 7] 8 [9 47 0 255] 9 2 10 [6 7 [0 3] 9 86 0 1] 0 2] 9 2 10 [6 0 28] 0 2]
-        [8 [7 [0 7] 8 [9 47 0 255] 9 2 10 [6 7 [0 3] 9 747 0 1] 0 2] 9 2 10 [6 0 58] 0 2]
+        [8 [7 [0 7] 8 [9 47 0 255] 9 2 10 [6 7 [0 3] 9 1.495 0 1] 0 2] 9 2 10 [6 0 58] 0 2]
         [8 [7 [0 7] 9 766 0 1] 9 2 10 [6 0 118] 0 2]
         6
         [5 [0 55] 1 418.565.088.612]
