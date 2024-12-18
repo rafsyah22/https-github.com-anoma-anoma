@@ -6,6 +6,7 @@ defmodule Nock.Jets do
   import Noun
   import Bitwise
   alias Anoma.Crypto.Sign
+  alias Anoma.TransparentResource.{Delta, Action}
 
   @spec calculate_mug_of_core(non_neg_integer(), non_neg_integer()) ::
           non_neg_integer()
@@ -67,9 +68,9 @@ defmodule Nock.Jets do
   """
   @spec calculate_mug_of_layer(non_neg_integer()) :: non_neg_integer()
   def calculate_mug_of_layer(layer) do
-    context_axis = Integer.pow(2, Nock.stdlib_layers() - layer + 1) - 1
+    context_axis = layer_offset(layer)
 
-    with {:ok, context} <- Noun.axis(context_axis, Nock.stdlib_core()) do
+    with {:ok, context} <- Noun.axis(context_axis, Nock.Lib.rm_core()) do
       mug(context)
     end
   end
@@ -91,8 +92,9 @@ defmodule Nock.Jets do
   For our standard library, so far only layer 4 is parameterized
   """
   def calculate_mug_of_param_core(index_in_core, core_index, parent_layer) do
-    with {:ok, val} <-
-           calculate_core_param(core_index, index_in_core, parent_layer) do
+    with {:ok, core} <-
+           calculate_core_param(core_index, index_in_core, parent_layer),
+         {:ok, val} <- Noun.axis(14, core) do
       Noun.mug(hd(val))
     end
   end
@@ -110,7 +112,9 @@ defmodule Nock.Jets do
   For our standard library, so far only layer 4 is parameterized
   """
   def calculate_mug_of_param_layer(core_index, parent_layer) do
-    with {:ok, core} <- calculate_core_param(core_index, 4, parent_layer),
+    with {:ok, layer} <-
+           parent_layer |> layer_offset |> Noun.axis(Nock.Lib.rm_core()),
+         {:ok, core} <- core_index |> Noun.axis(layer),
          {:ok, parent} <- Noun.axis(14, core) do
       Noun.mug(parent)
     end
@@ -122,37 +126,28 @@ defmodule Nock.Jets do
           non_neg_integer()
         ) ::
           :error | {:ok, Noun.t()}
-  def calculate_core_param(core_index, gate_index, parent_layer) do
-    Nock.nock(Nock.logics_core(), [
-      7,
-      [
-        9,
-        core_index,
-        0 | Noun.index_to_offset(Nock.stdlib_layers() - parent_layer + 3)
-      ],
-      9,
-      gate_index,
-      0 | 1
-    ])
+  def calculate_core_param(core_index, index_in_core, parent_layer) do
+    with {:ok, layer} <-
+           parent_layer |> layer_offset |> Noun.axis(Nock.Lib.rm_core()),
+         {:ok, core} <- core_index |> Noun.axis(layer),
+         {:ok, res} <- Nock.nock(layer, core) do
+      index_in_core |> Noun.axis(res)
+    end
   end
 
   @spec calculate_core(non_neg_integer(), non_neg_integer()) ::
           :error | {:ok, Noun.t()}
-  defp calculate_core(index_in_core, parent_layer) do
-    Nock.nock(Nock.logics_core(), [
-      8,
-      # We drive `layers - parent + 3`, from how layers get pushed.
-      # Each layer pushes the previous one down by one. the + 3 is for:
-      # 0. layer 0 (I believe, Ι may be incorrect on this)
-      # 1. the rm_core
-      # 2. the logics_core
-      [
-        9,
-        index_in_core,
-        0 | Noun.index_to_offset(Nock.stdlib_layers() - parent_layer + 3)
-      ],
-      0 | 2
-    ])
+  def calculate_core(index_in_core, layer) do
+    with {:ok, res1} <-
+           layer |> layer_offset() |> Noun.axis(Nock.Lib.rm_core()),
+         {:ok, res2} <- index_in_core |> Noun.axis(res1) do
+      Nock.nock(res1, res2)
+    end
+  end
+
+  @spec layer_offset(non_neg_integer) :: non_neg_integer
+  defp layer_offset(layers) do
+    Noun.index_to_offset(Nock.Lib.stdlib_layers() - layers + 1)
   end
 
   # when this is called, we've already jet-matched axis 7.
@@ -431,7 +426,7 @@ defmodule Nock.Jets do
       # we get #b1111, if count is 4. Since 1 <<< 4 = #b10000 - 1 = #b1111
       # block_size just a left shift on the count
       mask = (1 <<< (count <<< block_size)) - 1
-      {:ok, val &&& mask}
+      {:ok, an_integer(val) &&& mask}
     else
       _ -> :error
     end
@@ -597,6 +592,60 @@ defmodule Nock.Jets do
   end
 
   defp a_signed_integer(x), do: Noun.atom_binary_to_signed_integer(x)
+
+  @spec delta_add(Noun.t()) :: :error | {:ok, Noun.t()}
+  def delta_add(core) do
+    with {:ok, [a | b]} <- sample(core),
+         {:ok, delta1} <- Delta.from_noun(a),
+         {:ok, delta2} <- Delta.from_noun(b) do
+      res = Delta.add(delta1, delta2) |> Delta.to_noun()
+      {:ok, res}
+    else
+      _ ->
+        :error
+    end
+  end
+
+  @spec delta_sub(Noun.t()) :: :error | {:ok, Noun.t()}
+  def delta_sub(core) do
+    with {:ok, [a | b]} <- sample(core),
+         {:ok, delta1} <- Delta.from_noun(a),
+         {:ok, delta2} <- Delta.from_noun(b) do
+      res = Delta.sub(delta1, delta2) |> Delta.to_noun()
+      {:ok, res}
+    else
+      _ -> :error
+    end
+  end
+
+  @spec action_delta(Noun.t()) :: :error | {:ok, Noun.t()}
+  def action_delta(core) do
+    with {:ok, a} <- sample(core),
+         {:ok, action} <- Action.from_noun(a) do
+      res = action |> Action.delta() |> Delta.to_noun()
+      {:ok, res}
+    else
+      _ -> :error
+    end
+  end
+
+  @spec make_delta(Noun.t()) :: :error | {:ok, Noun.t()}
+  def make_delta(core) do
+    with {:ok, a} <- sample(core),
+         {:ok, list} <- Noun.list_nock_to_erlang_safe(a),
+         action_list <- list |> Enum.map(&Action.from_noun/1),
+         false <- action_list |> Enum.any?(&(&1 == :error)) do
+      res =
+        action_list
+        |> Enum.map(&Action.delta(elem(&1, 1)))
+        |> Enum.reduce(%{}, &Delta.sub/2)
+        |> Delta.to_noun()
+
+      {:ok, res}
+    else
+      _ -> :error
+    end
+  end
 
   ############################################################
   #                   Arithmetic Helpers                     #
