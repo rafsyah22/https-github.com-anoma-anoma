@@ -449,6 +449,11 @@ defmodule Anoma.Node.Transaction.Backends do
          }}
       )
 
+      # Get ciphertext from tx
+      _ciphertext = CTransaction.get_cipher_texts(tx)
+
+      # TODO: Store ciphertext
+
       nullifier_event(tx.nullifiers, node_id)
 
       {:ok, tx}
