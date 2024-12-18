@@ -15,7 +15,7 @@ defmodule Anoma.Node.Examples.ETransaction do
 
   @spec start_storage(String.t()) :: GenServer.on_start()
   def start_storage(node_id \\ Node.example_random_id()) do
-    Anoma.Node.Transaction.Storage.start_link(node_id: node_id)
+    ENode.start_node(node_id: node_id)
   end
 
   @spec write_then_read(String.t()) :: String.t()
